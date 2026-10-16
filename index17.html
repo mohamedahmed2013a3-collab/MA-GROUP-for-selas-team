@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MA Group - منصة المتاجر الإلكترونية التجريبية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brandBlue: '#0066ff',
+                        brandDark: '#0f172a'
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 5px #0066ff, 0 0 15px #0066ff; transform: scale(1); }
+            50% { box-shadow: 0 0 20px #0066ff, 0 0 35px #0066ff; transform: scale(1.05); }
+        }
+        .glow-btn {
+            animation: pulseGlow 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-brandDark dark:text-gray-100 transition-colors duration-300 min-h-screen flex flex-col justify-between">
+
+    <header class="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div class="bg-black p-1.5 rounded-lg flex items-center justify-center">
+                    <img src="0ef1ebe7-7ac4-4b86-8d90-939c964d77d1.png" alt="MA Group Logo" class="w-10 h-10 object-contain rounded">
+                </div>
+                <div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-400 bg-clip-text text-transparent">MA GROUP</span>
+                    <span id="currentStoreBadge" class="hidden text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full mr-2">تجريبي</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button onclick="toggleDarkMode()" class="p-2 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300">
+                    <i id="darkModeIcon" class="fas fa-sun"></i>
+                </button>
+                <div id="userHeaderInfo" class="hidden items-center space-x-2 space-x-reverse">
+                    <span id="headerStoreName" class="font-semibold text-blue-600"></span>
+                    <button onclick="logout()" class="text-red-500 text-sm hover:underline">خروج</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-6 w-full">
+
+        <div id="authPortal" class="grid grid-cols-1 md:grid-cols-2 gap-8 my-10">
+            <!-- بوكس تسجيل الدخول -->
+            <div class="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
+                <h2 class="text-2xl font-bold mb-6 text-blue-600"><i class="fas fa-sign-in-alt ml-2"></i>تسجيل الدخول</h2>
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                    <div>
+                        <label class="block mb-1 text-sm">البريد الإلكتروني أو كلمة مرور المشرف</label>
+                        <input type="text" id="loginEmailOrPass" required class="w-full px-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:border-blue-600">
+                    </div>
+                    <div id="loginPasswordDiv">
+                        <label class="block mb-1 text-sm">كلمة المرور</label>
+                        <input type="password" id="loginPassword" class="w-full px-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:border-blue-600">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg transition">دخول</button>
+                </form>
+            </div>
+
+            <!-- بوكس التسجيل الجديد -->
+            <div class="bg-white dark:bg-gray-900 p-8 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 flex flex-col justify-center">
+                <h2 class="text-2xl font-bold mb-6 text-blue-600"><i class="fas fa-user-plus ml-2"></i>تسجيل جديد (إنشاء متجر)</h2>
+                <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
+                    <div>
+                        <label class="block mb-1 text-sm">الاسم بالكامل</label>
+                        <input type="text" id="regName" required class="w-full px-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:border-blue-600">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm">اسم المتجر</label>
+                        <input type="text" id="regStoreName" required class="w-full px-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:border-blue-600">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div>
+                            <label class="block mb-1 text-sm">البريد الشخصي</label>
+                            <input type="email" id="regEmail" required class="w-full px-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:border-blue-600">
+                        </div>
+                        <div>
+                            <label class="block mb-1 text-sm">بريد العمل</label>
+                            <input type="email" id="regWorkEmail" required class="w-full px-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:border-blue-600">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm">رقم الواتساب</label>
+                        <input type="tel" id="regWhatsapp" required class="w-full px-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:border-blue-600">
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm">كلمة المرور</label>
+                        <input type="password" id="regPassword" required class="w-full px-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:border-blue-600">
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg transition">إرسال طلب إنشاء متجر تجريبي (3 أيام)</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="pendingNotice" class="hidden text-center py-20 bg-white dark:bg-gray-900 rounded-2xl shadow p-8">
+            <i class="fas fa-clock text-6xl text-amber-500 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">طلبك قيد المراجعة</h2>
+            <p class="text-gray-500 mb-6">يرجى الانتظار حتى يقوم المشرف بقبول طلبك لتتمكن من تشغيل متجرك التجريبي لمدة 3 أيام.</p>
+            <button onclick="logout()" class="bg-gray-600 text-white px-6 py-2 rounded-lg">تسجيل الخروج</button>
+        </div>
+
+        <div id="adminDashboard" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-white dark:bg-gray-900 p-6 rounded-2xl shadow">
+                <h2 class="text-2xl font-bold text-blue-600"><i class="fas fa-shield-alt ml-2"></i>لوحة تحكم المشرف</h2>
+                <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg">تسجيل خروج المشرف</button>
+            </div>
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow overflow-hidden p-6">
+                <h3 class="text-xl font-bold mb-4">المتاجر المسجلة والطلبات</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-right border-collapse">
+                        <thead>
+                            <tr class="border-b dark:border-gray-800 text-gray-400">
+                                <th class="py-3 px-4">اسم صاحب المتجر</th>
+                                <th class="py-3 px-4">اسم المتجر</th>
+                                <th class="py-3 px-4">البريد الإلكتروني</th>
+                                <th class="py-3 px-4">كلمة المرور</th>
+                                <th class="py-3 px-4">الواتساب</th>
+                                <th class="py-3 px-4">الحالة والمدة المتبقية</th>
+                                <th class="py-3 px-4">الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminStoresTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="storeView" class="hidden space-y-6 pb-20">
+            <div class="bg-gradient-to-r from-blue-600 to-cyan-500 text-white p-6 rounded-2xl shadow flex justify-between items-center">
+                <div>
+                    <h1 id="storeTitleDisplay" class="text-3xl font-bold"></h1>
+                    <span class="bg-black/30 text-xs px-3 py-1 rounded-full mt-2 inline-block">متجر إلكتروني تجريبي (متبقي: <span id="timeLeftDisplay">3 أيام</span>)</span>
+                </div>
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <button onclick="switchViewTab('home')" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg font-bold">الرئيسية</button>
+                </div>
+            </div>
+
+            <div id="homeTabContent" class="space-y-6">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-gray-900 p-4 rounded-xl shadow">
+                    <div class="relative w-full md:w-1/2">
+                        <i class="fas fa-search absolute right-3 top-3.5 text-gray-400"></i>
+                        <input type="text" id="searchInput" oninput="filterProducts()" placeholder="محرك بحث ذكي للمنتجات..." class="w-full pr-10 pl-4 py-2 rounded-lg border dark:bg-gray-800 dark:border-gray-700 focus:outline-none focus:border-blue-600">
+                    </div>
+                    <div class="flex items-center space-x-3 space-x-reverse">
+                        <button onclick="setViewMode('grid')" id="gridBtn" class="p-2 bg-blue-600 text-white rounded-lg"><i class="fas fa-th"></i></button>
+                        <button onclick="setViewMode('list')" id="listBtn" class="p-2 bg-gray-200 dark:bg-gray-800 rounded-lg"><i class="fas fa-list"></i></button>
+                    </div>
+                </div>
+
+                <div id="productsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+            </div>
+
+            <div id="productDetailTab" class="hidden bg-white dark:bg-gray-900 p-6 rounded-2xl shadow space-y-6">
+                <button onclick="switchViewTab('home')" class="text-blue-600 font-bold"><i class="fas fa-arrow-right ml-1"></i> العودة للمنتجات</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="relative overflow-hidden rounded-xl border dark:border-gray-800 cursor-zoom-in" onmousemove="zoomImage(event)" onmouseleave="resetZoom()">
+                        <img id="detailImg" src="" alt="" class="w-full h-96 object-cover transition-transform duration-200">
+                        <span class="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-1 rounded">تجريبي</span>
+                    </div>
+                    <div class="space-y-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <h2 id="detailTitle" class="text-2xl font-bold"></h2>
+                                <button onclick="toggleFavoriteCurrent()" id="detailFavBtn" class="text-2xl text-gray-400 hover:text-red-500"><i class="fas fa-heart"></i></button>
+                            </div>
+                            <p id="detailPrice" class="text-xl font-bold text-blue-600 my-2"></p>
+                            <p id="detailDesc" class="text-gray-500 dark:text-gray-400 text-sm leading-relaxed"></p>
+                            <div class="mt-4">
+                                <label class="block text-sm mb-1">نوع الطلب:</label>
+                                <select id="orderTypeSelect" class="w-full p-2 rounded border dark:bg-gray-800 dark:border-gray-700">
+                                    <option value="شخصي">خاص (شخصي)</option>
+                                    <option value="هدية">هدية</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="openOrderModal()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl glow-btn transition">اطلب الآن (تجريبي)</button>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t dark:border-gray-800">
+                    <h3 class="text-xl font-bold mb-4">تقييمات المنتج</h3>
+                    <div id="productReviewsList" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div id="cartTab" class="hidden bg-white dark:bg-gray-900 p-6 rounded-2xl shadow space-y-4">
+                <h2 class="text-2xl font-bold">سلة المشتريات</h2>
+                <div id="cartItemsList" class="space-y-4"></div>
+                <div id="cartTotalSection" class="border-t pt-4 flex justify-between items-center font-bold text-lg">
+                    <span>الإجمالي:</span>
+                    <span id="cartTotalPrice">0 ج.م</span>
+                </div>
+                <button onclick="openOrderModal()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">إتمام الطلب</button>
+            </div>
+
+            <div id="myOrdersTab" class="hidden bg-white dark:bg-gray-900 p-6 rounded-2xl shadow space-y-4">
+                <h2 class="text-2xl font-bold">مشترياتي وتتبع الطلبات</h2>
+                <div id="myOrdersList" class="space-y-4"></div>
+            </div>
+
+            <div id="accountTab" class="hidden bg-white dark:bg-gray-900 p-6 rounded-2xl shadow space-y-4">
+                <h2 class="text-2xl font-bold">حسابي</h2>
+                <div class="space-y-2 text-sm">
+                    <p><strong>اسم المتجر:</strong> <span id="accStoreName"></span> (تجريبي)</p>
+                    <p><strong>البريد:</strong> <span id="accEmail"></span></p>
+                    <p><strong>الواتساب:</strong> <span id="accWhatsapp"></span></p>
+                    <p><strong>حالة التجربة:</strong> نشط (مدة 3 أيام)</p>
+                </div>
+                <div class="pt-4 border-t dark:border-gray-800">
+                    <h3 class="font-bold mb-3">المنتجات المفضلة</h3>
+                    <div id="favoritesList" class="grid grid-cols-1 sm:grid-cols-3 gap-4"></div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <nav id="storeBottomNav" class="hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-800 py-3 px-6 flex justify-around items-center z-40 shadow-lg">
+        <button onclick="switchStoreTab('home')" class="flex flex-col items-center text-blue-600"><i class="fas fa-store text-lg"></i><span class="text-xs mt-1">الرئيسية</span></button>
+        <button onclick="switchStoreTab('cart')" class="flex flex-col items-center text-gray-500 hover:text-blue-600"><i class="fas fa-shopping-cart text-lg"></i><span class="text-xs mt-1">السلة</span></button>
+        <button onclick="switchStoreTab('myOrders')" class="flex flex-col items-center text-gray-500 hover:text-blue-600"><i class="fas fa-box text-lg"></i><span class="text-xs mt-1">مشترياتي</span></button>
+        <button onclick="switchStoreTab('account')" class="flex flex-col items-center text-gray-500 hover:text-blue-600"><i class="fas fa-user text-lg"></i><span class="text-xs mt-1">حسابي</span></button>
+    </nav>
+
+    <div id="orderModal" class="hidden fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-900 max-w-md w-full p-6 rounded-2xl shadow-xl space-y-4">
+            <h3 class="text-xl font-bold">إتمام طلب المنتج (تجريبي)</h3>
+            <form onsubmit="submitOrder(event)" class="space-y-3">
+                <div>
+                    <label class="block text-sm mb-1">الاسم</label>
+                    <input type="text" id="orderName" required class="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">الرقم</label>
+                    <input type="tel" id="orderPhone" required class="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">البريد الإلكتروني</label>
+                    <input type="email" id="orderEmail" required class="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700">
+                </div>
+                <div>
+                    <label class="block text-sm mb-1">العنوان</label>
+                    <textarea id="orderAddress" required class="w-full p-2 border rounded dark:bg-gray-800 dark:border-gray-700"></textarea>
+                </div>
+                <div class="flex space-x-2 space-x-reverse pt-2">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg font-bold">تأكيد الطلب</button>
+                    <button type="button" onclick="closeOrderModal()" class="bg-gray-300 dark:bg-gray-700 py-2 px-4 rounded-lg">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="feedbackModal" class="hidden fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-900 max-w-sm w-full p-6 rounded-2xl shadow-xl text-center space-y-4">
+            <h3 class="text-xl font-bold">تقييم تجربة المنتج</h3>
+            <p class="text-sm text-gray-500">هل هذا المنتج مفيد؟</p>
+            <div id="starRatingContainer" class="flex justify-center space-x-2 space-x-reverse text-2xl text-amber-400 cursor-pointer">
+                <i class="fas fa-star" onclick="setRating(1)"></i>
+                <i class="fas fa-star" onclick="setRating(2)"></i>
+                <i class="fas fa-star" onclick="setRating(3)"></i>
+                <i class="fas fa-star" onclick="setRating(4)"></i>
+                <i class="fas fa-star" onclick="setRating(5)"></i>
+            </div>
+            <button onclick="submitFeedback()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold">إرسال التقييم</button>
+        </div>
+    </div>
+
+    <div id="trackingModal" class="hidden fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-900 max-w-md w-full p-6 rounded-2xl shadow-xl space-y-4">
+            <h3 class="text-xl font-bold">تتبع حالة الطلب (تجريبي)</h3>
+            <div class="space-y-3">
+                <div class="flex items-center space-x-3 space-x-reverse text-blue-600">
+                    <i class="fas fa-check-circle text-xl"></i>
+                    <span>تم استلام الطلب بنجاح</span>
+                </div>
+                <div class="flex items-center space-x-3 space-x-reverse text-blue-600">
+                    <i class="fas fa-box-open text-xl"></i>
+                    <span>جاري تجهيز المنتج التجريبي</span>
+                </div>
+                <div class="flex items-center space-x-3 space-x-reverse text-gray-400" id="trackStep3">
+                    <i class="fas fa-truck text-xl"></i>
+                    <span>تم الشحن والتوصيل</span>
+                </div>
+            </div>
+            <button onclick="closeTrackingModal()" class="w-full bg-gray-600 text-white py-2 rounded-lg">إغلاق</button>
+        </div>
+    </div>
+
+    <footer class="bg-white dark:bg-gray-900 border-t dark:border-gray-800 py-4 text-center text-sm text-gray-500">
+        جميع الحقوق محفوظة للمنصة والمتجر - developed by <span class="text-blue-500 font-bold">&lt;/&gt;</span> mohamed
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase.app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase.analytics.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyAYyhAbJVgMB85ExZ_9fhZGj_BsdK-Z7xo",
+            authDomain: "ma2-8a2d1.firebaseapp.com",
+            databaseURL: "https://ma2-8a2d1-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "ma2-8a2d1",
+            storageBucket: "ma2-8a2d1.firebasestorage.app",
+            messagingSenderId: "98650879657",
+            appId: "1:98650879657:web:07bf8dc84c52191ca59bb8",
+            measurementId: "G-0BTJ5KNCRZ"
+        };
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+    </script>
+
+    <script>
+        let stores = JSON.parse(localStorage.getItem('ma_stores')) || [
+            { name: "محمد أحمد", storeName: "متجر السعادة التجريبي", email: "mohamed@mail.com", workEmail: "work@mail.com", whatsapp: "01012345678", password: "123", status: "approved", expiry: Date.now() + 3*24*60*60*1000 }
+        ];
+        let currentUser = JSON.parse(localStorage.getItem('ma_current_user')) || null;
+        let viewMode = 'grid';
+        let currentSelectedProduct = null;
+        let favorites = JSON.parse(localStorage.getItem('ma_favorites')) || [];
+        let cart = [];
+        let myOrders = JSON.parse(localStorage.getItem('ma_orders')) || [];
+        let currentRatingVal = 5;
+        let currentFeedbackOrder = null;
+
+        const sampleProducts = [
+            { id: 1, title: "ساعة ذكية متطورة (تجريبي)", price: "1200 ج.م", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400", desc: "ساعة ذكية مميزة لإدارة مهامك اليومية بكل سهولة.", reviews: [{rating: 5, comment: "ممتازة جداً!"}] },
+            { id: 2, title: "سماعات لاسلكية برو (تجريبي)", price: "850 ج.م", image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400", desc: "صوت نقي وعالي الجودة مع عزل كامل للضوضاء.", reviews: [{rating: 4, comment: "جيدة جداً وصوتها نقي"}] },
+            { id: 3, title: "حذاء رياضي مريح (تجريبي)", price: "650 ج.م", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400", desc: "تصميم عصري ومريح للجري والتمارين اليومية.", reviews: [{rating: 5, comment: "مريح جداً للقدمين"}] },
+            { id: 4, title: "حقيبة ظهر عصرية (تجريبي)", price: "450 ج.م", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400", desc: "مصنوعة من خامات مقاومة للماء لمتانة عالية.", reviews: [{rating: 5, comment: "عملية جداً وواسعة"}] }
+        ];
+
+        window.onload = function() {
+            // ضبط الوضع الافتراضي ليكون Dark Mode إذا لم يكن المستخدم قد اختار مسبقاً
+            if(localStorage.getItem('ma_dark') === null) {
+                localStorage.setItem('ma_dark', 'true');
+            }
+            if(localStorage.getItem('ma_dark') === 'true') {
+                document.documentElement.classList.add('dark');
+                document.getElementById('darkModeIcon').className = "fas fa-sun";
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.getElementById('darkModeIcon').className = "fas fa-moon";
+            }
+            renderApp();
+        };
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            let isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('ma_dark', isDark);
+            document.getElementById('darkModeIcon').className = isDark ? "fas fa-sun" : "fas fa-moon";
+        }
+
+        function renderApp() {
+            document.getElementById('authPortal').classList.add('hidden');
+            document.getElementById('pendingNotice').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('storeView').classList.add('hidden');
+            document.getElementById('storeBottomNav').classList.add('hidden');
+            document.getElementById('userHeaderInfo').classList.add('hidden');
+            document.getElementById('currentStoreBadge').classList.add('hidden');
+
+            if (!currentUser) {
+                document.getElementById('authPortal').classList.remove('hidden');
+            } else if (currentUser === 'admin') {
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                renderAdminTable();
+            } else {
+                let store = stores.find(s => s.email === currentUser);
+                if (!store || store.status !== 'approved') {
+                    document.getElementById('pendingNotice').classList.remove('hidden');
+                } else {
+                    document.getElementById('storeView').classList.remove('hidden');
+                    document.getElementById('storeBottomNav').classList.remove('hidden');
+                    document.getElementById('userHeaderInfo').classList.remove('hidden');
+                    document.getElementById('currentStoreBadge').classList.remove('hidden');
+                    document.getElementById('headerStoreName').innerText = store.storeName;
+                    document.getElementById('storeTitleDisplay').innerText = store.storeName;
+                    renderProducts(sampleProducts);
+                    renderCart();
+                    renderOrders();
+                    renderFavorites();
+                    document.getElementById('accStoreName').innerText = store.storeName;
+                    document.getElementById('accEmail').innerText = store.email;
+                    document.getElementById('accWhatsapp').innerText = store.whatsapp;
+                }
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            let val = document.getElementById('loginEmailOrPass').value;
+            let pass = document.getElementById('loginPassword').value;
+            if (val === '5555' || pass === '5555') {
+                currentUser = 'admin';
+                localStorage.setItem('ma_current_user', JSON.stringify(currentUser));
+                renderApp();
+                return;
+            }
+            let store = stores.find(s => s.email === val || s.storeName === val);
+            if (store) {
+                currentUser = store.email;
+                localStorage.setItem('ma_current_user', JSON.stringify(currentUser));
+                renderApp();
+            } else {
+                alert('بيانات الدخول غير صحيحة');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            let newStore = {
+                name: document.getElementById('regName').value,
+                storeName: document.getElementById('regStoreName').value,
+                email: document.getElementById('regEmail').value,
+                workEmail: document.getElementById('regWorkEmail').value,
+                whatsapp: document.getElementById('regWhatsapp').value,
+                password: document.getElementById('regPassword').value,
+                status: 'pending',
+                expiry: Date.now() + 3*24*60*60*1000
+            };
+            stores.push(newStore);
+            localStorage.setItem('ma_stores', JSON.stringify(stores));
+            currentUser = newStore.email;
+            localStorage.setItem('ma_current_user', JSON.stringify(currentUser));
+            renderApp();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('ma_current_user');
+            renderApp();
+        }
+
+        function renderAdminTable() {
+            let tbody = document.getElementById('adminStoresTable');
+            tbody.innerHTML = '';
+            stores.forEach((st, idx) => {
+                let timeLeft = Math.max(0, Math.ceil((st.expiry - Date.now()) / (1000*60*60*24)));
+                tbody.innerHTML += `
+                    <tr class="border-b dark:border-gray-800">
+                        <td class="py-3 px-4">${st.name}</td>
+                        <td class="py-3 px-4 font-bold text-blue-600">${st.storeName} (تجريبي)</td>
+                        <td class="py-3 px-4">${st.email}</td>
+                        <td class="py-3 px-4">${st.password}</td>
+                        <td class="py-3 px-4">${st.whatsapp}</td>
+                        <td class="py-3 px-4">${st.status === 'approved' ? 'نشط (متبقي ' + timeLeft + ' أيام)' : 'قيد الانتظار'}</td>
+                        <td class="py-3 px-4">
+                            ${st.status === 'pending' ? `<button onclick="approveStore(\${idx})" class="bg-green-600 text-white px-3 py-1 rounded text-sm">قبول</button>` : `<span class="text-green-500 font-bold">مقبول</span>`}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function approveStore(idx) {
+            stores[idx].status = 'approved';
+            stores[idx].expiry = Date.now() + 3*24*60*60*1000;
+            localStorage.setItem('ma_stores', JSON.stringify(stores));
+            renderAdminTable();
+        }
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            document.getElementById('gridBtn').className = mode === 'grid' ? 'p-2 bg-blue-600 text-white rounded-lg' : 'p-2 bg-gray-200 dark:bg-gray-800 rounded-lg';
+            document.getElementById('listBtn').className = mode === 'list' ? 'p-2 bg-blue-600 text-white rounded-lg' : 'p-2 bg-gray-200 dark:bg-gray-800 rounded-lg';
+            renderProducts(sampleProducts);
+        }
+
+        function filterProducts() {
+            let query = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = sampleProducts.filter(p => p.title.toLowerCase().includes(query) || p.desc.toLowerCase().includes(query));
+            renderProducts(filtered);
+        }
+
+        function renderProducts(prods) {
+            let container = document.getElementById('productsContainer');
+            container.className = viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" : "space-y-4";
+            container.innerHTML = '';
+            prods.forEach(p => {
+                let isFav = favorites.includes(p.id);
+                if (viewMode === 'grid') {
+                    container.innerHTML += `
+                        <div class="bg-white dark:bg-gray-900 rounded-xl shadow border dark:border-gray-800 overflow-hidden flex flex-col justify-between">
+                            <div class="relative cursor-pointer" onclick="openProductDetail(${p.id})">
+                                <img src="${p.image}" class="w-full h-48 object-cover">
+                                <span class="absolute top-2 right-2 bg-amber-500 text-white text-xs px-2 py-0.5 rounded">تجريبي</span>
+                            </div>
+                            <div class="p-4 space-y-2">
+                                <h3 class="font-bold cursor-pointer hover:text-blue-600" onclick="openProductDetail(${p.id})">${p.title}</h3>
+                                <p class="text-blue-600 font-bold">${p.price}</p>
+                            </div>
+                            <div class="p-4 pt-0 flex justify-between items-center">
+                                <button onclick="toggleFavorite(${p.id})" class="text-xl ${isFav ? 'text-red-500' : 'text-gray-400'}"><i class="fas fa-heart"></i></button>
+                                <button onclick="openProductDetail(${p.id})" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm glow-btn">اطلب (تجريبي)</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML += `
+                        <div class="bg-white dark:bg-gray-900 rounded-xl shadow border dark:border-gray-800 p-4 flex items-center justify-between">
+                            <div class="flex items-center space-x-4 space-x-reverse cursor-pointer" onclick="openProductDetail(${p.id})">
+                                <img src="${p.image}" class="w-20 h-20 object-cover rounded-lg">
+                                <div>
+                                    <h3 class="font-bold">${p.title} <span class="text-xs bg-amber-500 text-white px-2 py-0.5 rounded">تجريبي</span></h3>
+                                    <p class="text-blue-600 font-bold">${p.price}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3 space-x-reverse">
+                                <button onclick="toggleFavorite(${p.id})" class="text-xl ${isFav ? 'text-red-500' : 'text-gray-400'}"><i class="fas fa-heart"></i></button>
+                                <button onclick="openProductDetail(${p.id})" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm glow-btn">اطلب (تجريبي)</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function openProductDetail(id) {
+            currentSelectedProduct = sampleProducts.find(p => p.id === id);
+            document.getElementById('detailImg').src = currentSelectedProduct.image;
+            document.getElementById('detailTitle').innerText = currentSelectedProduct.title;
+            document.getElementById('detailPrice').innerText = currentSelectedProduct.price;
+            document.getElementById('detailDesc').innerText = currentSelectedProduct.desc;
+            
+            let isFav = favorites.includes(id);
+            document.getElementById('detailFavBtn').className = isFav ? "text-2xl text-red-500" : "text-2xl text-gray-400";
+            
+            let revList = document.getElementById('productReviewsList');
+            revList.innerHTML = '';
+            currentSelectedProduct.reviews.forEach(r => {
+                let stars = '<i class="fas fa-star text-amber-400"></i>'.repeat(r.rating);
+                revList.innerHTML += `<div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm"><div class="flex items-center space-x-1 space-x-reverse mb-1">${stars}</div><p>${r.comment}</p></div>`;
+            });
+
+            switchViewTab('detail');
+        }
+
+        function zoomImage(e) {
+            let img = document.getElementById('detailImg');
+            let rect = e.target.getBoundingClientRect();
+            let x = ((e.clientX - rect.left) / rect.width) * 100;
+            let y = ((e.clientY - rect.top) / rect.height) * 100;
+            img.style.transformOrigin = `${x}% ${y}%`;
+            img.style.transform = "scale(2)";
+        }
+
+        function resetZoom() {
+            let img = document.getElementById('detailImg');
+            img.style.transformOrigin = "center center";
+            img.style.transform = "scale(1)";
+        }
+
+        function toggleFavorite(id) {
+            if (favorites.includes(id)) {
+                favorites = favorites.filter(f => f !== id);
+            } else {
+                favorites.push(id);
+            }
+            localStorage.setItem('ma_favorites', JSON.stringify(favorites));
+            renderProducts(sampleProducts);
+            renderFavorites();
+            if (currentSelectedProduct && currentSelectedProduct.id === id) {
+                let isFav = favorites.includes(id);
+                document.getElementById('detailFavBtn').className = isFav ? "text-2xl text-red-500" : "text-2xl text-gray-400";
+            }
+        }
+
+        function toggleFavoriteCurrent() {
+            if (currentSelectedProduct) toggleFavorite(currentSelectedProduct.id);
+        }
+
+        function renderFavorites() {
+            let list = document.getElementById('favoritesList');
+            list.innerHTML = '';
+            favorites.forEach(id => {
+                let p = sampleProducts.find(item => item.id === id);
+                if (p) {
+                    list.innerHTML += `
+                        <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="openProductDetail(${p.id})">
+                            <img src="${p.image}" class="w-12 h-12 object-cover rounded">
+                            <div>
+                                <h4 class="font-bold text-sm">${p.title}</h4>
+                                <span class="text-blue-600 text-xs">${p.price}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function switchViewTab(tab) {
+            document.getElementById('homeTabContent').classList.add('hidden');
+            document.getElementById('productDetailTab').classList.add('hidden');
+            document.getElementById('cartTab').classList.add('hidden');
+            document.getElementById('myOrdersTab').classList.add('hidden');
+            document.getElementById('accountTab').classList.add('hidden');
+
+            if (tab === 'home') document.getElementById('homeTabContent').classList.remove('hidden');
+            if (tab === 'detail') document.getElementById('productDetailTab').classList.remove('hidden');
+            if (tab === 'cart') document.getElementById('cartTab').classList.remove('hidden');
+            if (tab === 'myOrders') document.getElementById('myOrdersTab').classList.remove('hidden');
+            if (tab === 'account') document.getElementById('accountTab').classList.remove('hidden');
+        }
+
+        function switchStoreTab(tab) {
+            switchViewTab(tab);
+        }
+
+        function openOrderModal() {
+            document.getElementById('orderModal').classList.remove('hidden');
+        }
+
+        function closeOrderModal() {
+            document.getElementById('orderModal').classList.add('hidden');
+        }
+
+        function submitOrder(e) {
+            e.preventDefault();
+            let newOrder = {
+                id: Date.now(),
+                title: currentSelectedProduct ? currentSelectedProduct.title : "طلب عدة منتجات (تجريبي)",
+                price: currentSelectedProduct ? currentSelectedProduct.price : "متعدد",
+                name: document.getElementById('orderName').value,
+                phone: document.getElementById('orderPhone').value,
+                email: document.getElementById('orderEmail').value,
+                address: document.getElementById('orderAddress').value,
+                orderType: document.getElementById('orderTypeSelect') ? document.getElementById('orderTypeSelect').value : 'شخصي',
+                statusStep: 2
+            };
+            myOrders.push(newOrder);
+            localStorage.setItem('ma_orders', JSON.stringify(myOrders));
+            closeOrderModal();
+            renderOrders();
+            alert('تم تأكيد الطلب التجريبي بنجاح!');
+            switchStoreTab('myOrders');
+        }
+
+        function renderOrders() {
+            let list = document.getElementById('myOrdersList');
+            list.innerHTML = '';
+            myOrders.forEach(ord => {
+                list.innerHTML += `
+                    <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl flex justify-between items-center">
+                        <div>
+                            <h4 class="font-bold">${ord.title} <span class="text-xs bg-amber-500 text-white px-2 py-0.5 rounded">تجريبي</span></h4>
+                            <p class="text-sm text-gray-500">النوع: ${ord.orderType} | السعر: ${ord.price}</p>
+                        </div>
+                        <div class="flex space-x-2 space-x-reverse">
+                            <button onclick="openTrackingModal(${ord.id})" class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm">تتبع الحالة</button>
+                            <button onclick="openFeedbackModal(${ord.id})" class="bg-amber-600 text-white px-3 py-1.5 rounded text-sm">تقييم المنتج</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openTrackingModal(id) {
+            document.getElementById('trackingModal').classList.remove('hidden');
+        }
+
+        function closeTrackingModal() {
+            document.getElementById('trackingModal').classList.add('hidden');
+        }
+
+        function openFeedbackModal(orderId) {
+            currentFeedbackOrder = orderId;
+            document.getElementById('feedbackModal').classList.remove('hidden');
+        }
+
+        function setRating(val) {
+            currentRatingVal = val;
+            let stars = document.getElementById('starRatingContainer').children;
+            for(let i=0; i<stars.length; i++) {
+                if(i < val) {
+                    stars[i].className = "fas fa-star text-amber-400";
+                } else {
+                    stars[i].className = "far fa-star text-gray-400";
+                }
+            }
+        }
+
+        function submitFeedback() {
+            alert('شكراً لك! تم إضافة تقييمك (' + currentRatingVal + ' نجوم) بنجاح إلى تقييمات المنتج (تجريبي).');
+            document.getElementById('feedbackModal').classList.add('hidden');
+        }
+
+        function renderCart() {
+            let list = document.getElementById('cartItemsList');
+            list.innerHTML = `<p class="text-gray-500">السلة فارغة حالياً</p>`;
+        }
+    </script>
+</body>
+</html>
